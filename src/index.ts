@@ -62,8 +62,15 @@ const fatal = (...args: any[]) => {
  * @param image
  * @param chain
  */
-const getChainspec = (image: string, chain: string) => {
-  const res = exec(`docker run --rm ${image} build-spec --chain=${chain} --disable-default-bootnode`);
+const getChainspec = (config: Config, image: string, chain: string, paraId?: number) => {
+  let res;
+  if (paraId) {
+    // the image is a parachain
+    res = exec(`docker run --rm ${image} ${chain} build-spec --chain=${config.relaychain.chain}-${paraId} --disable-default-bootnode`);
+  } else {
+    // the image is a relay chain
+    res = exec(`docker run --rm ${image} build-spec --chain=${chain} --disable-default-bootnode`);
+  }
 
   let spec;
 
@@ -82,28 +89,29 @@ const getChainspec = (image: string, chain: string) => {
  * @param config
  * @param output
  */
-const exportParachainGenesis = (parachain: Parachain, output: string) => {
+const exportParachainGenesis = (config: Config, parachain: Parachain, output: string) => {
   if (!parachain.image) {
     return fatal('Missing parachains[].image');
   }
 
   const args = [];
 
+  const chain = typeof parachain.chain === 'string' ? parachain.chain : parachain.chain.base;
   if (parachain.chain) {
     args.push(
-      `--chain=/app/${typeof parachain.chain === 'string' ? parachain.chain : parachain.chain.base}-${
+      `--chain=/app/${chain}-${
         parachain.id
       }.json`
     );
   }
 
-  const res2 = exec(
-    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} export-genesis-wasm ${args.join(' ')}`
+  let res2 = exec(
+    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} ${chain} export-genesis-wasm --chain=${config.relaychain.chain}-${parachain.id}`
   );
   const wasm = res2.stdout.trim();
 
   const res = exec(
-    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} export-genesis-state ${args.join(' ')}`
+    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} ${chain} export-genesis-state --chain=${config.relaychain.chain}-${parachain.id}`
   );
   const state = res.stdout.trim();
 
@@ -137,7 +145,7 @@ const generateRelaychainGenesisFile = (config: Config, path: string, output: str
     return fatal('Missing relaychain.image');
   }
 
-  const spec = getChainspec(relaychain.image, relaychain.chain);
+  const spec = getChainspec(config, relaychain.image, relaychain.chain);
 
   // clear authorities
   const runtime = spec.genesis.runtime.runtime_genesis_config || spec.genesis.runtime;
@@ -188,7 +196,7 @@ const generateRelaychainGenesisFile = (config: Config, path: string, output: str
 
   // genesis parachains
   for (const parachain of config.parachains) {
-    const { wasm, state } = exportParachainGenesis(parachain, output);
+    const { wasm, state } = exportParachainGenesis(config, parachain, output);
     if (!parachain.id) {
       return fatal('Missing parachains[].id');
     }
@@ -207,7 +215,7 @@ const generateRelaychainGenesisFile = (config: Config, path: string, output: str
   fs.writeFileSync(tmpfile, jsonStringify(spec));
 
   exec(
-    `docker run --rm -v "${tmpfile}":/${config.relaychain.chain}.json ${config.relaychain.image} build-spec --raw --chain=/${config.relaychain.chain}.json --disable-default-bootnode > ${path}`
+    `docker run --rm -v "${tmpfile}":/${config.relaychain.chain}.json ${config.relaychain.image} build-spec --raw --chain=${config.relaychain.chain}.json --disable-default-bootnode > ${path}`
   );
 
   shell.rm(tmpfile);
@@ -238,7 +246,7 @@ const getAddress = (val: string) => {
  * @param image
  */
 const generateNodeKey = (image: string) => {
-  const res = exec(`docker run --rm ${image} key generate-node-key`);
+  const res = exec(`docker run --rm parity/subkey generate-node-key`);
   return {
     key: res.stdout.trim(),
     address: res.stderr.trim(),
@@ -278,6 +286,7 @@ const setParachainRuntimeValue = (runtime: { [index: string]: any }, key: string
  * @param yes
  */
 const generateParachainGenesisFile = (
+  config: Config, 
   id: number,
   image: string,
   chain: Chain | string,
@@ -303,7 +312,7 @@ const generateParachainGenesisFile = (
 
   checkOverrideFile(filepath, yes);
 
-  const spec = getChainspec(image, chain.base);
+  const spec = getChainspec(config, image, chain.base, id);
 
   spec.bootNodes = [];
 
@@ -402,7 +411,7 @@ const generate = async (config: Config, { output, yes }: { output: string; yes: 
     return fatal('Missing relaychain.chain');
   }
 
-  const relaychainGenesisFilePath = path.join(output, `${config.relaychain.chain}.json`);
+  const relaychainGenesisFilePath = path.join(output, `${config.relaychain.chain}-raw.json`);
   checkOverrideFile(relaychainGenesisFilePath, yes);
 
   const dockerComposePath = path.join(output, 'docker-compose.yml');
@@ -410,9 +419,6 @@ const generate = async (config: Config, { output, yes }: { output: string; yes: 
 
   fs.mkdirSync(output, { recursive: true });
 
-  for (const parachain of config.parachains) {
-    generateParachainGenesisFile(parachain.id, parachain.image, parachain.chain, output, yes);
-  }
 
   generateRelaychainGenesisFile(config, relaychainGenesisFilePath, output);
   generateDockerfiles(config, output, yes);
@@ -446,7 +452,7 @@ const generate = async (config: Config, { output, yes }: { output: string; yes: 
       },
       command: [
         '--base-path=/data',
-        `--chain=/app/${config.relaychain.chain}.json`,
+        `--chain=/app/${config.relaychain.chain}-raw.json`,
         '--validator',
         '--ws-external',
         '--rpc-external',
@@ -487,10 +493,9 @@ const generate = async (config: Config, { output, yes }: { output: string; yes: 
           dockerfile: `parachain-${parachain.id}.Dockerfile`,
         },
         command: [
+          `${typeof parachain.chain === 'string' ? parachain.chain : parachain.chain.base}`,
           `--base-path=${volumePath}`,
-          `--chain=/app/${typeof parachain.chain === 'string' ? parachain.chain : parachain.chain.base}-${
-            parachain.id
-          }.json`,
+          `--chain=${config.relaychain.chain}-${parachain.id}`,
           '--ws-external',
           '--rpc-external',
           '--rpc-cors=all',
@@ -503,7 +508,7 @@ const generate = async (config: Config, { output, yes }: { output: string; yes: 
             : `--bootnodes=/dns/parachain-${parachain.id}-0/tcp/30333/p2p/${nodeAddress}`,
           '--listen-addr=/ip4/0.0.0.0/tcp/30333',
           '--',
-          `--chain=/app/${config.relaychain.chain}.json`,
+          `--chain=/app/${config.relaychain.chain}-raw.json`,
           ...(parachain.relaychainFlags || []),
           ...(parachainNode.relaychainFlags || []),
         ],
