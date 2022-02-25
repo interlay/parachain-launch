@@ -404,7 +404,7 @@ const generateDockerfiles = (config: Config, output: string, yes: boolean) => {
  * @param config
  * @param args
  */
-const generate = async (config: Config, { output, yes }: { output: string; yes: boolean }) => {
+const generate = async (config: Config, { output, yes, servicesPath }: { output: string; yes: boolean, servicesPath: string }) => {
   await cryptoWaitReady();
 
   if (!config?.relaychain?.chain) {
@@ -524,8 +524,17 @@ const generate = async (config: Config, { output, yes }: { output: string; yes: 
     }
   }
 
-  fs.writeFileSync(dockerComposePath, YAML.stringify(dockerCompose));
-
+  let yamlContent: string = '';
+  if (servicesPath && servicesPath !== '') {
+    // must append the other services before printing volumes information
+    const volumesDelimiter = "volumes:\n  ? relaychain-alice";
+    const parachainDockerCompose = YAML.stringify(dockerCompose).split(volumesDelimiter);
+    const serviceDefinitions = fs.readFileSync(servicesPath, 'utf8');
+    yamlContent = parachainDockerCompose[0] + serviceDefinitions + volumesDelimiter + parachainDockerCompose[1];
+  } else {
+    yamlContent = YAML.stringify(dockerCompose);
+  }
+  fs.writeFileSync(dockerComposePath, yamlContent);
   console.log('docker-compose.yml generated at', dockerComposePath);
 };
 
@@ -543,6 +552,12 @@ yargs(hideBin(process.argv))
       type: 'boolean',
       default: false,
       description: 'Yes for options',
+    },
+    servicesPath: {
+      alias: 's',
+      type: 'string',
+      default: '',
+      description: 'Uses a docker-compose yaml snippet to append other services',
     },
   })
   .command(
