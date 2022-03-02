@@ -215,7 +215,7 @@ const generateRelaychainGenesisFile = (config: Config, path: string, output: str
   fs.writeFileSync(tmpfile, jsonStringify(spec));
 
   exec(
-    `docker run --rm -v "${tmpfile}":/${config.relaychain.chain}.json ${config.relaychain.image} build-spec --raw --chain=${config.relaychain.chain}.json --disable-default-bootnode > ${path}`
+    `docker run --rm -v "${tmpfile}":/${config.relaychain.chain}.json ${config.relaychain.image} build-spec --raw --chain=/${config.relaychain.chain}.json --disable-default-bootnode > ${path}`
   );
 
   shell.rm(tmpfile);
@@ -286,7 +286,7 @@ const setParachainRuntimeValue = (runtime: { [index: string]: any }, key: string
  * @param yes
  */
 const generateParachainGenesisFile = (
-  config: Config, 
+  config: Config,
   id: number,
   image: string,
   chain: Chain | string,
