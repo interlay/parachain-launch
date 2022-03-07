@@ -76,7 +76,7 @@
         # sleep for 30s to wait for bitcoin to create the Charlie wallet
         # and also to ensure that the issue period and redeem period are set
         sleep 30
-        vault-parachain-metadata-testnet --keyfile="keyfile.json" --keyname="vault_1" --auto-register-with-collateral 1000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
+        vault-parachain-metadata-testnet --keyfile="keyfile.json" --keyname="vault_1" --auto-register-with-collateral 10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
     environment: &client-env
       BITCOIN_RPC_URL: http://bitcoind:18443
       BITCOIN_RPC_USER: rpcuser
@@ -109,7 +109,7 @@
         # sleep for 30s to wait for bitcoin to create the Eve wallet
         # and also to ensure that the issue period and redeem period are set
         sleep 30
-        vault-parachain-metadata-testnet --keyfile="keyfile.json" --keyname=vault_3 --auto-register-with-collateral 1000000000000 --no-issue-execution --btc-parachain-url 'ws://parachain-2000-0:9944'
+        vault-parachain-metadata-testnet --keyfile="keyfile.json" --keyname=vault_3 --auto-register-with-collateral 10000000000000 --no-issue-execution --btc-parachain-url 'ws://parachain-2000-0:9944'
     environment:
       <<: *client-env
   vault_to_liquidate:
@@ -139,6 +139,6 @@
         # sleep for 30s to wait for bitcoin to create the Ferdie wallet
         # and also to ensure that the issue period and redeem period are set
         sleep 30
-        vault-parachain-metadata-testnet --keyfile="keyfile.json" --keyname=vault_to_ban --auto-register-with-collateral 1000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
+        vault-parachain-metadata-testnet --keyfile="keyfile.json" --keyname=vault_to_ban --auto-register-with-collateral 10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
     environment:
       <<: *client-env
