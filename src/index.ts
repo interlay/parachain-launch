@@ -211,11 +211,11 @@ const generateRelaychainGenesisFile = (config: Config, path: string, output: str
     runtime.paras.paras.push(para);
   }
 
-  const tmpfile = `${shell.tempdir()}/${config.relaychain.chain}.json`;
+  const tmpfile = `${output}/${config.relaychain.chain}.json`;
   fs.writeFileSync(tmpfile, jsonStringify(spec));
 
   exec(
-    `docker run --rm -v "${tmpfile}":/${config.relaychain.chain}.json ${config.relaychain.image} build-spec --raw --chain=${config.relaychain.chain}.json --disable-default-bootnode > ${path}`
+    `docker run --rm -v $(pwd)/"${output}":/app ${config.relaychain.image} build-spec --raw --chain=/app/${config.relaychain.chain}.json --disable-default-bootnode > ${path}`
   );
 
   shell.rm(tmpfile);
