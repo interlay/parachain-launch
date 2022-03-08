@@ -52,7 +52,7 @@
     ports:
       - '3002:3002'
   oracle:
-    image: docker.io/interlayhq/interbtc-clients:oracle-parachain-metadata-testnet-1-5-12
+    image: docker.io/interlayhq/interbtc-clients:oracle-parachain-metadata-testnet-1-6-0
     command:
       - /bin/sh
       - -c
@@ -65,7 +65,7 @@
     environment:
       RUST_LOG: info
   vault_1:
-    image: 'interlayhq/interbtc-clients:vault-parachain-metadata-testnet-1-5-12'
+    image: interlayhq/interbtc-clients:vault-parachain-metadata-testnet-1-6-0
     command:
       - /bin/sh
       - -c
@@ -83,7 +83,7 @@
       BITCOIN_RPC_PASS: rpcpassword
       RUST_LOG: info
   vault_2:
-    image: 'interlayhq/interbtc-clients:vault-parachain-metadata-testnet-1-5-12'
+    image: 'interlayhq/interbtc-clients:vault-parachain-metadata-testnet-1-6-0'
     command:
       - /bin/sh
       - -c
@@ -98,7 +98,7 @@
     environment:
       <<: *client-env
   vault_3:
-    image: 'interlayhq/interbtc-clients:vault-parachain-metadata-testnet-1-5-12'
+    image: 'interlayhq/interbtc-clients:vault-parachain-metadata-testnet-1-6-0'
     command:
       - /bin/sh
       - -c
@@ -113,7 +113,7 @@
     environment:
       <<: *client-env
   vault_to_liquidate:
-    image: 'interlayhq/interbtc-clients:vault-parachain-metadata-testnet-1-5-12'
+    image: 'interlayhq/interbtc-clients:vault-parachain-metadata-testnet-1-6-0'
     command:
       - /bin/sh
       - -c
@@ -128,7 +128,7 @@
     environment:
       <<: *client-env
   vault_to_ban:
-    image: 'interlayhq/interbtc-clients:vault-parachain-metadata-testnet-1-5-12'
+    image: 'interlayhq/interbtc-clients:vault-parachain-metadata-testnet-1-6-0'
     command:
       - /bin/sh
       - -c
