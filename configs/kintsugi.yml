@@ -1,6 +1,6 @@
 # Relaychain Configuration
 relaychain:
-  image: parity/polkadot:v0.9.17 # the docker image to use
+  image: parity/polkadot:v0.9.18 # the docker image to use
   chain: rococo-local # the chain to use
   runtimeGenesisConfig: # additonal genesis override
     configuration:
@@ -26,7 +26,7 @@ relaychain:
 # Parachain Configuration
 parachains:
 # Config for first parachain
-- image: interlayhq/interbtc:interbtc-parachain-1.7.4
+- image: interlayhq/interbtc:interbtc-parachain-1.12.1
   chain: # this could be a string like `dev` or a config object
     base: interbtc-parachain # the chain to use
     collators:
