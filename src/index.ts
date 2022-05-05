@@ -62,15 +62,8 @@ const fatal = (...args: any[]) => {
  * @param image
  * @param chain
  */
-const getChainspec = (config: Config, image: string, chain: string, paraId?: number) => {
-  let res;
-  if (paraId) {
-    // the image is a parachain
-    res = exec(`docker run --rm ${image} ${chain} build-spec --chain=${config.relaychain.chain}-${paraId} --disable-default-bootnode`);
-  } else {
-    // the image is a relay chain
-    res = exec(`docker run --rm ${image} build-spec --chain=${chain} --disable-default-bootnode`);
-  }
+ const getChainspec = (image: string, chain: string) => {
+  const res = exec(`docker run --rm ${image} build-spec --chain=${chain} --disable-default-bootnode`);
 
   let spec;
 
@@ -106,12 +99,12 @@ const exportParachainGenesis = (config: Config, parachain: Parachain, output: st
   }
 
   let res2 = exec(
-    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} ${chain} export-genesis-wasm --chain=${config.relaychain.chain}-${parachain.id}`
+    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} export-genesis-wasm --chain=${config.relaychain.chain}-${parachain.id}`
   );
   const wasm = res2.stdout.trim();
 
   const res = exec(
-    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} ${chain} export-genesis-state --chain=${config.relaychain.chain}-${parachain.id}`
+    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} export-genesis-state --chain=${config.relaychain.chain}-${parachain.id}`
   );
   const state = res.stdout.trim();
 
@@ -145,7 +138,7 @@ const generateRelaychainGenesisFile = (config: Config, path: string, output: str
     return fatal('Missing relaychain.image');
   }
 
-  const spec = getChainspec(config, relaychain.image, relaychain.chain);
+  const spec = getChainspec(relaychain.image, relaychain.chain);
 
   // clear authorities
   const runtime = spec.genesis.runtime.runtime_genesis_config || spec.genesis.runtime;
@@ -312,7 +305,7 @@ const generateParachainGenesisFile = (
 
   checkOverrideFile(filepath, yes);
 
-  const spec = getChainspec(config, image, chain.base, id);
+  const spec = getChainspec(image, chain.base);
 
   spec.bootNodes = [];
 
@@ -493,7 +486,6 @@ const generate = async (config: Config, { output, yes, servicesPath }: { output:
           dockerfile: `parachain-${parachain.id}.Dockerfile`,
         },
         command: [
-          `${typeof parachain.chain === 'string' ? parachain.chain : parachain.chain.base}`,
           `--base-path=${volumePath}`,
           `--chain=${config.relaychain.chain}-${parachain.id}`,
           '--ws-external',
