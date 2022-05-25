@@ -130,7 +130,7 @@
         # sleep for 30s to wait for bitcoin to create the Ferdie wallet
         # and also to ensure that the issue period and redeem period are set
         sleep 30
-        vault-parachain-metadata-testnet --keyfile="keyfile.json" --keyname=vault_to_liquidate --auto-register=KSM=1000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
+        vault-parachain-metadata-testnet --keyfile="keyfile.json" --keyname=vault_to_liquidate --auto-register=KSM=1000000000000 --auto-register=KINT=10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
     environment:
       <<: *client-env
   vault_to_ban:
@@ -145,6 +145,6 @@
         # sleep for 30s to wait for bitcoin to create the Ferdie wallet
         # and also to ensure that the issue period and redeem period are set
         sleep 30
-        vault-parachain-metadata-testnet --keyfile="keyfile.json" --keyname=vault_to_ban --auto-register=KSM=10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
+        vault-parachain-metadata-testnet --keyfile="keyfile.json" --keyname=vault_to_ban --auto-register=KSM=10000000000000 --auto-register=KINT=10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
     environment:
       <<: *client-env
