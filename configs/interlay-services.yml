@@ -52,7 +52,7 @@
     ports:
       - '3002:3002'
   oracle:
-    image: docker.io/interlayhq/interbtc-clients:oracle-parachain-metadata-testnet-1-12-1
+    image: docker.io/interlayhq/interbtc-clients:oracle-parachain-metadata-interlay-testnet-1-12-1
     command:
       - /bin/sh
       - -c
