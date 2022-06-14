@@ -19,7 +19,7 @@ import { Config, Parachain, Chain, DockerConfig, DockerNode } from './types';
  */
 const checkOverrideFile = (path: string, yes: boolean) => {
   if (fs.existsSync(path) && !yes) {
-    const res = readline.keyInYN(`'${path}' alraedy exists. Do you wish to override it?`);
+    const res = readline.keyInYN(`'${path}' already exists. Do you wish to override it?`);
     if (!res) {
       console.log('Bailing... Bye.');
       process.exit(0);
@@ -76,35 +76,30 @@ const fatal = (...args: any[]) => {
   return spec;
 };
 
+const getParachainSpecName = (parachain: Parachain): string => {
+  return typeof parachain.chain === 'string' ? parachain.chain : `${parachain.chain.base}-${parachain.id}`;
+};
+
 /**
  * Export parachain genesis
  *
  * @param config
  * @param output
  */
-const exportParachainGenesis = (config: Config, parachain: Parachain, output: string) => {
+const exportParachainGenesis = (parachain: Parachain, output: string) => {
   if (!parachain.image) {
     return fatal('Missing parachains[].image');
   }
 
-  const args = [];
+  const chain = getParachainSpecName(parachain);
 
-  const chain = typeof parachain.chain === 'string' ? parachain.chain : parachain.chain.base;
-  if (parachain.chain) {
-    args.push(
-      `--chain=/app/${chain}-${
-        parachain.id
-      }.json`
-    );
-  }
-
-  let res2 = exec(
-    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} export-genesis-wasm --chain=${config.relaychain.chain}-${parachain.id}`
+  const res2 = exec(
+    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} export-genesis-wasm --chain=${chain}`
   );
   const wasm = res2.stdout.trim();
 
   const res = exec(
-    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} export-genesis-state --chain=${config.relaychain.chain}-${parachain.id}`
+    `docker run -v $(pwd)/"${output}":/app --rm ${parachain.image} export-genesis-state --chain=${chain}`
   );
   const state = res.stdout.trim();
 
@@ -189,7 +184,7 @@ const generateRelaychainGenesisFile = (config: Config, path: string, output: str
 
   // genesis parachains
   for (const parachain of config.parachains) {
-    const { wasm, state } = exportParachainGenesis(config, parachain, output);
+    const { wasm, state } = exportParachainGenesis(parachain, output);
     if (!parachain.id) {
       return fatal('Missing parachains[].id');
     }
@@ -473,6 +468,7 @@ const generate = async (config: Config, { output, yes, servicesPath }: { output:
 
     for (const parachainNode of parachain.nodes) {
       const name = `parachain-${parachain.id}-${nodeIdx}`;
+      const chain = getParachainSpecName(parachain);
 
       const nodeConfig: DockerNode = {
         ports: [
@@ -487,7 +483,7 @@ const generate = async (config: Config, { output, yes, servicesPath }: { output:
         },
         command: [
           `--base-path=${volumePath}`,
-          `--chain=${config.relaychain.chain}-${parachain.id}`,
+          `--chain=${chain}`,
           '--ws-external',
           '--rpc-external',
           '--rpc-cors=all',

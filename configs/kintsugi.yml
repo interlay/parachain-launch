@@ -28,7 +28,7 @@ parachains:
 # Config for first parachain
 - image: interlayhq/interbtc:1.13.1
   chain: # this could be a string like `dev` or a config object
-    base: interbtc-parachain # the chain to use
+    base: rococo-local # the chain to use
     collators:
       - alice
   id: 2000 # override parachain id
