@@ -62,7 +62,7 @@ const fatal = (...args: any[]) => {
  * @param image
  * @param chain
  */
- const getChainspec = (image: string, chain: string) => {
+const getChainspec = (image: string, chain: string) => {
   const res = exec(`docker run --rm ${image} build-spec --chain=${chain} --disable-default-bootnode`);
 
   let spec;
@@ -392,7 +392,10 @@ const generateDockerfiles = (config: Config, output: string, yes: boolean) => {
  * @param config
  * @param args
  */
-const generate = async (config: Config, { output, yes, servicesPath }: { output: string; yes: boolean, servicesPath: string }) => {
+const generate = async (
+  config: Config,
+  { output, yes, servicesPath }: { output: string; yes: boolean; servicesPath: string }
+) => {
   await cryptoWaitReady();
 
   if (!config?.relaychain?.chain) {
@@ -406,7 +409,6 @@ const generate = async (config: Config, { output, yes, servicesPath }: { output:
   checkOverrideFile(dockerComposePath, yes);
 
   fs.mkdirSync(output, { recursive: true });
-
 
   generateRelaychainGenesisFile(config, relaychainGenesisFilePath, output);
   generateDockerfiles(config, output, yes);
@@ -512,10 +514,10 @@ const generate = async (config: Config, { output, yes, servicesPath }: { output:
     }
   }
 
-  let yamlContent: string = '';
+  let yamlContent = '';
   if (servicesPath && servicesPath !== '') {
     // must append the other services before printing volumes information
-    const volumesDelimiter = "volumes:\n  ? relaychain-alice";
+    const volumesDelimiter = 'volumes:\n  ? relaychain-alice';
     const parachainDockerCompose = YAML.stringify(dockerCompose).split(volumesDelimiter);
     const serviceDefinitions = fs.readFileSync(servicesPath, 'utf8');
     yamlContent = parachainDockerCompose[0] + serviceDefinitions + volumesDelimiter + parachainDockerCompose[1];
