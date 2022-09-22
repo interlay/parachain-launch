@@ -57,7 +57,7 @@
       - /bin/sh
       - -c
       - |
-        /usr/local/bin/oracle \
+        /usr/local/bin/oracle-parachain-metadata-interlay-testnet \
         --keyring charlie \
         --btc-parachain-url 'ws://parachain-2000-0:9944' \
         --currency-id DOT=230 \
@@ -78,7 +78,7 @@
         # sleep for 30s to wait for bitcoin to create the Charlie wallet
         # and also to ensure that the issue period and redeem period are set
         sleep 30
-        /usr/local/bin/vault --keyfile="keyfile.json" --keyname="vault_1" --auto-register=DOT=10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
+        /usr/local/bin/vault-parachain-metadata-interlay-testnet --keyfile="keyfile.json" --keyname="vault_1" --auto-register=DOT=10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
     environment: &client-env
       BITCOIN_RPC_URL: http://bitcoind:18443
       BITCOIN_RPC_USER: rpcuser
@@ -96,7 +96,7 @@
         # sleep for 30s to wait for bitcoin to create the Dave wallet
         # and also to ensure that the issue period and redeem period are set
         sleep 30
-        /usr/local/bin/vault --keyfile="keyfile.json" --keyname=vault_2 --auto-register=DOT=10000000000000 --no-issue-execution --btc-parachain-url 'ws://parachain-2000-0:9944'
+        /usr/local/bin/vault-parachain-metadata-interlay-testnet --keyfile="keyfile.json" --keyname=vault_2 --auto-register=DOT=10000000000000 --no-issue-execution --btc-parachain-url 'ws://parachain-2000-0:9944'
     environment:
       <<: *client-env
   vault_3:
@@ -111,7 +111,7 @@
         # sleep for 30s to wait for bitcoin to create the Eve wallet
         # and also to ensure that the issue period and redeem period are set
         sleep 30
-        /usr/local/bin/vault --keyfile="keyfile.json" --keyname=vault_3 --auto-register=DOT=10000000000000 --no-issue-execution --btc-parachain-url 'ws://parachain-2000-0:9944'
+        /usr/local/bin/vault-parachain-metadata-interlay-testnet --keyfile="keyfile.json" --keyname=vault_3 --auto-register=DOT=10000000000000 --no-issue-execution --btc-parachain-url 'ws://parachain-2000-0:9944'
     environment:
       <<: *client-env
   vault_to_liquidate:
@@ -126,7 +126,7 @@
         # sleep for 30s to wait for bitcoin to create the Ferdie wallet
         # and also to ensure that the issue period and redeem period are set
         sleep 30
-        /usr/local/bin/vault --keyfile="keyfile.json" --keyname=vault_to_liquidate --auto-register=DOT=10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
+        /usr/local/bin/vault-parachain-metadata-interlay-testnet --keyfile="keyfile.json" --keyname=vault_to_liquidate --auto-register=DOT=10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
     environment:
       <<: *client-env
   vault_to_ban:
@@ -141,6 +141,6 @@
         # sleep for 30s to wait for bitcoin to create the Ferdie wallet
         # and also to ensure that the issue period and redeem period are set
         sleep 30
-        /usr/local/bin/vault --keyfile="keyfile.json" --keyname=vault_to_ban --auto-register=DOT=10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
+        /usr/local/bin/vault-parachain-metadata-interlay-testnet --keyfile="keyfile.json" --keyname=vault_to_ban --auto-register=DOT=10000000000000 --btc-parachain-url 'ws://parachain-2000-0:9944'
     environment:
       <<: *client-env
