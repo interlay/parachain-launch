@@ -26,7 +26,7 @@ relaychain:
 # Parachain Configuration
 parachains:
 # Config for first parachain
-- image: interlayhq/interbtc:1.21.5
+- image: interlayhq/interbtc:1.21.7
   chain: # this could be a string like `dev` or a config object
     base: rococo-local # the chain to use
     collators:
